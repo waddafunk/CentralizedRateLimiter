@@ -5,42 +5,43 @@ on:
     types: [published]
 
 permissions:
-  contents: write  # Changed from read to write to allow pushing changes
-  
+  contents: write
+  workflows: write  # Added workflows permission
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Fetch all history for pushing changes
-    
+        fetch-depth: 0
+
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.7'
-        
+
     - name: Configure Git
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        
+
     - name: Get version from tag
       id: get_version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-      
+
     - name: Update version in pyproject.toml
       run: |
         sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
-        
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         make dev-install
-        
+
     - name: Build package
       run: make build
-      
+
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
@@ -55,11 +56,11 @@ jobs:
 
     - name: Push changes and update tag
       run: |
-        # Push changes to main/master branch
-        git push origin HEAD:main || git push origin HEAD:master
+        # Push changes to main branch with proper refspec
+        git push origin HEAD:refs/heads/main || git push origin HEAD:refs/heads/master
         
         # Force update the tag to point to the new commit
         git tag -fa ${GITHUB_REF#refs/tags/} -m "Update tag to include toml version change"
-        git push origin --force ${GITHUB_REF#refs/tags/}
+        git push origin --force refs/tags/${GITHUB_REF#refs/tags/}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
