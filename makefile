@@ -35,7 +35,7 @@ test:
 	$(PYTHON) -m pytest
 
 coverage:
-	$(PYTHON) -m pytest --cov=$(PACKAGE) --cov-report=term-missing --cov-report=xml
+	$(PYTHON) -m pytest --cov=$(PACKAGE) --cov-report=term-missing --cov-report=xml --cov-fail-under=100
 	@echo "Coverage report generated: coverage.xml"
 
 clean:
