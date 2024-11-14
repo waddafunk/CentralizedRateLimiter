@@ -303,23 +303,6 @@ The project uses GitHub Actions for CI/CD, running the following checks on each 
 - Tests with coverage reporting
 - Package building
 
-## 📦 Publishing
-
-To publish a new version:
-
-1. Update version in `pyproject.toml`
-2. Create and push a new tag:
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-3. Build and publish:
-```bash
-make build
-python -m twine upload dist/*
-```
-
 ## 🤝 Contributing
 
 Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
@@ -327,7 +310,7 @@ Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## 📚 API Reference
 
