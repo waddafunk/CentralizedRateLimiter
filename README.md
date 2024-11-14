@@ -16,7 +16,7 @@ pip install centralized-rate-limiter
 
 ## 🌟 Features
 
-- **Centralized Configuration**: Set rate limiting parameters once and reuse across your application
+- **Centralized Configuration**: Set rate limiting parameters once and reuse across your application for all request methods
 - **Comprehensive Retry Logic**: Built-in exponential backoff and configurable retry attempts
 - **Thread-Safe**: Reliable rate limiting in multi-threaded environments
 - **Flexible HTTP Support**: Works with all standard HTTP methods
