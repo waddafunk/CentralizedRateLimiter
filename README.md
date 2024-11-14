@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/waddafunk/CentralizedRateLimiter)
 [![PyPI version](https://badge.fury.io/py/centralized-rate-limiter.svg)](https://badge.fury.io/py/centralized-rate-limiter)
 
-A robust, centralized rate limiting utility for Python applications that need precise control over API request rates with built-in retry mechanisms.
+A robust, centralized rate limiting utility for Python applications that need precise control over API request rates with built-in retry mechanisms and a single rate limit for all request methods.
 
 ## 🌟 Features
 
@@ -87,8 +87,9 @@ except Exception as e:
 
 ### Use CentralizedRateLimiter When You Need:
 
-1. **Integrated Rate Limiting and Retry Logic**
+1. **Centralized Rate Limiting and Retry Logic**
    - You want a single solution that handles both rate limiting and retries
+   - You want a single rate limit for all your requests methods 
    - You need fine-grained control over retry behavior
 
 2. **Thread-Safe Operation**
