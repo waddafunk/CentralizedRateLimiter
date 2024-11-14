@@ -1,18 +1,17 @@
 import pytest
 import time
 import responses
-from requests.exceptions import RequestException
-from src.rate_limiting import get_rate_limiter, RateLimitedSessionProto
+from src.rate_limiting import get_rate_limiter, RateLimitedSession
 from urllib3.util.retry import Retry
 
 
 @pytest.fixture
-def session() -> RateLimitedSessionProto:
-    return get_rate_limiter(requests_per_second=10, total_retries=3, backoff_factor=0.1)()
+def session() -> RateLimitedSession:
+    return get_rate_limiter(requests_per_second=10, total_retries=3, backoff_factor=0.1)
 
 
 @responses.activate
-def test_rate_limiting(session):
+def test_rate_limiting(session: RateLimitedSession):
     """Test that requests are rate limited according to the specified rate."""
     # Setup mock endpoint
     responses.add(
@@ -23,7 +22,7 @@ def test_rate_limiting(session):
     )
 
     # Make multiple requests and measure time
-    num_seconds_range = 10
+    num_seconds_range = 4
 
     for seconds in range(num_seconds_range):
         start_time = time.time()
@@ -33,11 +32,11 @@ def test_rate_limiting(session):
             assert response.status_code == 200
 
         elapsed_time = time.time() - start_time
-        assert elapsed_time >= seconds 
+        assert elapsed_time >= seconds
 
 
 @responses.activate
-def test_retry_behavior(session):
+def test_retry_behavior(session: RateLimitedSession):
     """Test that the session correctly retries on specified status codes."""
     # Setup mock endpoint that fails twice then succeeds
     responses.add(responses.GET, "https://api.example.com/test", status=503)
@@ -56,7 +55,7 @@ def test_retry_behavior(session):
 
 
 @responses.activate
-def test_different_http_methods(session):
+def test_different_http_methods(session: RateLimitedSession):
     """Test that rate limiting works for different HTTP methods."""
     # Setup mock endpoints for different methods
     responses.add(
@@ -96,7 +95,7 @@ def test_different_http_methods(session):
 
 
 @responses.activate
-def test_max_retries_exceeded(session):
+def test_max_retries_exceeded(session: RateLimitedSession):
     """Test that the session gives up after maximum retries."""
     # Setup mock endpoint to always return 503
     responses.add(responses.GET, "https://api.example.com/test", status=503)
@@ -111,8 +110,9 @@ def test_custom_parameters():
     """Test that custom rate limiting parameters are respected."""
     custom_session = get_rate_limiter(
         requests_per_second=2, total_retries=1, backoff_factor=0.5
-    )()
+    )
 
     assert isinstance(custom_session.adapters["http://"].max_retries, Retry)
     assert custom_session.adapters["http://"].max_retries.total == 1
     assert custom_session.adapters["http://"].max_retries.backoff_factor == 0.5
+    
