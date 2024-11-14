@@ -1,0 +1,12 @@
+pytest
+pytest-cov
+requests
+urllib3
+ratelimit
+black
+isort
+nbqa
+nbstripout
+pylint
+pyupgrade
+responses
