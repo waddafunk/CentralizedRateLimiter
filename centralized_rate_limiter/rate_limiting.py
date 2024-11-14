@@ -1,9 +1,10 @@
-from typing import Callable, Any
+from functools import wraps
+from typing import Any, Callable
+
 import requests
 from ratelimit import limits, sleep_and_retry
-from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-from functools import wraps
+from urllib3.util.retry import Retry
 
 
 def create_rate_limited_send(period: float) -> Callable:
@@ -53,7 +54,7 @@ class RateLimitedSession(requests.Session):
         self,
         requests_per_second: int = 10,
         total_retries: int = 5,
-        backoff_factor: float = 0.25
+        backoff_factor: float = 0.25,
     ) -> None:
         """Initialize a new rate-limited session.
 
@@ -114,7 +115,7 @@ def get_rate_limiter(
 
     A convenience function to create a new RateLimitedSession instance with custom parameters.
     Supports all parameters from requests.Session through args and kwargs.
-    
+
     Factory method for backwards compatibility with initial implementation.
 
     Args:
