@@ -115,4 +115,64 @@ def test_custom_parameters():
     assert isinstance(custom_session.adapters["http://"].max_retries, Retry)
     assert custom_session.adapters["http://"].max_retries.total == 1
     assert custom_session.adapters["http://"].max_retries.backoff_factor == 0.5
+
+@responses.activate
+def test_concurrent_requests(session: RateLimitedSession):
+    """Test that concurrent requests are properly rate limited."""
+    responses.add(
+        responses.GET,
+        "https://api.example.com/test",
+        json={"status": "success"},
+        status=200,
+    )
     
+    import threading
+    
+    # Make concurrent requests
+    threads = []
+    start_time = time.time()
+    
+    for _ in range(20):  # Try to make 20 concurrent requests
+        thread = threading.Thread(
+            target=lambda: session.get("https://api.example.com/test")
+        )
+        threads.append(thread)
+        thread.start()
+    
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
+        
+    elapsed_time = time.time() - start_time
+    expected_minimum_time = (20 / session.requests_per_second) - 0.1  # Allow small margin
+    
+    assert elapsed_time >= expected_minimum_time
+    assert len(responses.calls) == 20
+
+@responses.activate
+def test_too_many_requests_retry(session: RateLimitedSession):
+    """Test retry behavior specifically for 429 (Too Many Requests) status code."""
+    # Setup mock endpoint that returns 429 twice then succeeds
+    responses.add(responses.GET, "https://api.example.com/test", status=429)
+    responses.add(responses.GET, "https://api.example.com/test", status=429)
+    responses.add(
+        responses.GET,
+        "https://api.example.com/test",
+        json={"status": "success"},
+        status=200,
+    )
+
+    response = session.get("https://api.example.com/test")
+    
+    # Verify the response was eventually successful
+    assert response.status_code == 200
+    assert len(responses.calls) == 3
+
+    # Verify retry configuration
+    adapter = session.adapters['https://']
+    retry = adapter.max_retries
+    
+    # Verify retry settings
+    assert retry.total == session.total_retries
+    assert retry.backoff_factor == session.backoff_factor
+    assert 429 in retry.status_forcelist  # Verify 429 is in retry status codes
