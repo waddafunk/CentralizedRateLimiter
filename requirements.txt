@@ -5,8 +5,6 @@ urllib3
 ratelimit
 black
 isort
-nbqa
-nbstripout
 pylint
 pyupgrade
 responses
