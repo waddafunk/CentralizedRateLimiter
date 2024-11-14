@@ -8,6 +8,12 @@
 
 A robust, centralized rate limiting utility for Python applications that need precise control over API request rates with built-in retry mechanisms and a single rate limit for all request methods.
 
+## 🔧 Installation
+
+```bash
+pip install centralized-rate-limiter
+```
+
 ## 🌟 Features
 
 - **Centralized Configuration**: Set rate limiting parameters once and reuse across your application
@@ -21,7 +27,7 @@ A robust, centralized rate limiting utility for Python applications that need pr
 ## 🎯 Quick Start
 
 ```python
-from rate_limiting import get_rate_limiter
+from centralized_rate_limiter import get_rate_limiter
 
 # Create a rate limiter with custom parameters
 rate_limiter = get_rate_limiter(
@@ -45,7 +51,7 @@ post_response = rate_limiter.post(
 ### Custom Configuration
 
 ```python
-from rate_limiting import RateLimitedSession
+from centralized_rate_limiter import RateLimitedSession
 
 # Create a session with specific parameters
 session = RateLimitedSession(
