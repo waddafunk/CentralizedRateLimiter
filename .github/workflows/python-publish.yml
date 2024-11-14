@@ -5,18 +5,25 @@ on:
     types: [published]
 
 permissions:
-  contents: read
+  contents: write  # Changed from read to write to allow pushing changes
   
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for pushing changes
     
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: '3.7'
+        
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         
     - name: Get version from tag
       id: get_version
@@ -39,3 +46,9 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+
+    - name: Commit and push changes
+      run: |
+        git add pyproject.toml
+        git commit -m "chore: update version to $VERSION [skip ci]"
+        git push

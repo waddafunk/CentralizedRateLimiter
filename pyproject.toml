@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "centralized-rate-limiter"
-version = "x.x.x"
+version = "0.1.0"
 authors = [
     {name = "Jacopo Piccirillo", email = "jacopo.piccirillo@gmail.com"}
 ]
