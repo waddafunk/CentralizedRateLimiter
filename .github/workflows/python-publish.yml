@@ -49,6 +49,16 @@ jobs:
 
     - name: Commit and push changes
       run: |
+        # Get the default branch name (usually main or master)
+        DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+        
+        # Checkout the default branch
+        git checkout $DEFAULT_BRANCH
+        
+        # Update the file again (as checking out might have reverted it)
+        sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+        
+        # Stage, commit and push
         git add pyproject.toml
         git commit -m "chore: update version to $VERSION [skip ci]"
-        git push
+        git push origin $DEFAULT_BRANCH
