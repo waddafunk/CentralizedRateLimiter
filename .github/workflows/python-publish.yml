@@ -6,7 +6,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write  # Added workflows permission
 
 jobs:
   deploy:
@@ -54,13 +53,8 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git commit -a -m "Update toml version"
 
-    - name: Push changes and update tag
-      run: |
-        # Push changes to main branch with proper refspec
-        git push origin HEAD:refs/heads/main || git push origin HEAD:refs/heads/master
-        
-        # Force update the tag to point to the new commit
-        git tag -fa ${GITHUB_REF#refs/tags/} -m "Update tag to include toml version change"
-        git push origin --force refs/tags/${GITHUB_REF#refs/tags/}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main 
