@@ -47,18 +47,14 @@ jobs:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
 
-    - name: Commit and push changes
+    - name: Commit files
       run: |
-        # Get the default branch name (usually main or master)
-        DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-        
-        # Checkout the default branch
-        git checkout $DEFAULT_BRANCH
-        
-        # Update the file again (as checking out might have reverted it)
-        sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
-        
-        # Stage, commit and push
-        git add pyproject.toml
-        git commit -m "chore: update version to $VERSION [skip ci]"
-        git push origin $DEFAULT_BRANCH
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git commit -a -m "Update toml version"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
