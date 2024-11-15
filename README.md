@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/waddafunk/CentralizedRateLimiter)
-[![PyPI version](https://badge.fury.io/py/centralized-rate-limiter.svg)](https://badge.fury.io/py/centralized-rate-limiter)
+[![PyPI version](https://img.shields.io/pypi/v/centralized-rate-limiter.svg)](https://pypi.org/project/centralized-rate-limiter/)
 
 A robust, centralized rate limiting utility for Python applications that need precise control over API request rates with built-in retry mechanisms and a single rate limit for all request methods.
 
