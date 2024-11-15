@@ -10,23 +10,8 @@ on:
     branches: [ "main", "development" ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: make dev-install
-    - name: Lint with flake8
-      run: make format lint
-    - name: Test with pytest
-      run: make test
+  run-tests:
+    uses: waddafunk/make-pipelines/.github/workflows/test-python-package.yml@main
+    with:
+      python-versions: '["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]'
+      os: '["ubuntu-latest"]'
