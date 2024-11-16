@@ -103,8 +103,7 @@ class RateLimitedSession(requests.Session):
         self.mount("https://", adapter)
 
         # Create and set the rate-limited send method
-        self.send = create_rate_limited_send(
-            self.frequency)(self.send)
+        self.send = create_rate_limited_send(self.frequency)(self.send)
 
 
 def get_rate_limiter(
