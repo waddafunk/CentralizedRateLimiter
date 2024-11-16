@@ -8,6 +8,7 @@ help:
 	@echo "  make install      - Install package for production"
 	@echo "  make dev-install  - Install package with development dependencies"
 	@echo "  make format       - Format code using black and isort"
+	@echo "  make upgrade      - upgrade code using pyupgrade"
 	@echo "  make lint         - Run code quality checks (pylint, flake8)"
 	@echo "  make test         - Run tests with pytest"
 	@echo "  make coverage     - Generate test coverage report"
@@ -25,11 +26,15 @@ dev-install:
 format:
 	$(PYTHON) -m isort $(PACKAGE) tests
 	$(PYTHON) -m black $(PACKAGE) tests
-	$(PYTHON) -m pyupgrade --py37-plus **/*.py
+	
 
 lint:
 	$(PYTHON) -m pylint $(PACKAGE) tests \
 		--disable=C0114,C0115,C0116,R1725,C0103,W0621,W0603,R0914,E1101,W0622,R0903,W0702,W0212,W0102,R0912,R0915,C0301
+
+upgrade:
+	$(PYTHON) -m pyupgrade --py37-plus **/*.py
+
 
 test:
 	$(PYTHON) -m pytest
@@ -55,4 +60,4 @@ publish: build
 	$(PYTHON) -m twine check dist/*
 	@echo "Ready to publish! Run 'python -m twine upload dist/*' to publish to PyPI"
 
-all: dev-install format lint test coverage
+all: dev-install format upgrade lint test coverage
