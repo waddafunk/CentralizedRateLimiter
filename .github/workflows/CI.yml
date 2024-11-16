@@ -9,7 +9,7 @@ jobs:
     uses: waddafunk/make-pipelines/.github/workflows/format-and-lint.yml@main
 
   test:
-    uses: waddafunk/make-pipelines/.github/workflows/test.yml@main
+    uses: waddafunk/make-pipelines/.github/workflows/test-python-package.yml@main
     with:
       python-versions: '["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]'
       os: '["ubuntu-latest", "macos-latest", "windows-latest"]'
