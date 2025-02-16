@@ -12,6 +12,7 @@ from centralized_rate_limiter import RateLimitedSession, get_rate_limiter
 def session() -> RateLimitedSession:
     return get_rate_limiter(requests_per_second=10, total_retries=3, backoff_factor=0.1)
 
+
 @pytest.fixture
 def multi_rate_session() -> RateLimitedSession:
     """Session with multiple rate limits: 10/second and 30/minute."""
@@ -21,7 +22,7 @@ def multi_rate_session() -> RateLimitedSession:
         backoff_factor=0.1,
         additional_limits=[
             (30, 60),  # 30 per minute
-        ]
+        ],
     )
 
 
@@ -207,13 +208,15 @@ def test_additional_rate_limit(multi_rate_session: RateLimitedSession):
 
     # Try to make 35 requests (more than the 30/minute limit)
     start_time = time.time()
-    
+
     for _ in range(35):
         response = multi_rate_session.get("https://api.example.com/test")
         assert response.status_code == 200
 
     elapsed_time = time.time() - start_time
-    expected_minimum_time = 60  # Should take at least 1 minute due to the 30/minute limit
+    expected_minimum_time = (
+        60  # Should take at least 1 minute due to the 30/minute limit
+    )
 
     assert elapsed_time >= expected_minimum_time
     assert len(responses.calls) == 35
@@ -245,9 +248,11 @@ def test_multi_rate_concurrent(multi_rate_session: RateLimitedSession):
         thread.join()
 
     elapsed_time = time.time() - start_time
-    
+
     # Should be limited by the 30/minute rate limit
-    expected_minimum_time = 60  # At least one minute for 40 requests with 30/minute limit
+    expected_minimum_time = (
+        60  # At least one minute for 40 requests with 30/minute limit
+    )
 
     assert elapsed_time >= expected_minimum_time
     assert len(responses.calls) == 40
@@ -260,9 +265,9 @@ def test_multi_rate_parameters():
         total_retries=1,
         backoff_factor=0.5,
         additional_limits=[
-            (30, 60),     # 30 per minute
+            (30, 60),  # 30 per minute
             (100, 3600),  # 100 per hour
-        ]
+        ],
     )
 
     assert isinstance(custom_session.adapters["http://"].max_retries, Retry)
@@ -278,7 +283,7 @@ def test_mixed_rate_limits():
         requests_per_second=5,  # 5 per second
         additional_limits=[
             (10, 60),  # 10 per minute
-        ]
+        ],
     )
 
     responses.add(
@@ -296,9 +301,11 @@ def test_mixed_rate_limits():
         assert response.status_code == 200
 
     elapsed_time = time.time() - start_time
-    
+
     # Should be limited by the 10/minute rate limit
-    expected_minimum_time = 60  # At least one minute for 15 requests with 10/minute limit
+    expected_minimum_time = (
+        60  # At least one minute for 15 requests with 10/minute limit
+    )
 
     assert elapsed_time >= expected_minimum_time
     assert len(responses.calls) == 15

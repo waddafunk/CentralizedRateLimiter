@@ -1,12 +1,11 @@
-from functools import wraps
-from typing import Any, Callable, List, Optional, Tuple
+import threading
 import time
 from collections import deque
 from dataclasses import dataclass, field
-import threading
+from functools import wraps
+from typing import Any, Callable, List, Optional, Tuple
 
 import requests
-from ratelimit import limits, sleep_and_retry
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -14,9 +13,12 @@ from urllib3.util.retry import Retry
 @dataclass
 class RateLimit:
     """Represents a thread-safe rate limit with a maximum number of calls within a time period."""
+
     max_calls: int
     period: float  # in seconds
-    calls: deque = field(default_factory=lambda: deque(maxlen=0))  # Will be initialized in post_init
+    calls: deque = field(
+        default_factory=lambda: deque(maxlen=0)
+    )  # Will be initialized in post_init
     lock: threading.Lock = field(default_factory=threading.Lock)
 
     def __post_init__(self):
@@ -44,8 +46,7 @@ class RateLimit:
 
 
 def create_rate_limited_send(
-    period: float,
-    additional_limits: Optional[List[Tuple[int, float]]] = None
+    period: float, additional_limits: Optional[List[Tuple[int, float]]] = None
 ) -> Callable:
     """Create a thread-safe rate-limited send method.
 
@@ -59,11 +60,13 @@ def create_rate_limited_send(
     """
     # Create primary rate limit
     primary_limit = RateLimit(max_calls=1, period=period)
-    
+
     # Create additional rate limits if specified
     extra_limits = []
     if additional_limits:
-        extra_limits = [RateLimit(max_calls, period) for max_calls, period in additional_limits]
+        extra_limits = [
+            RateLimit(max_calls, period) for max_calls, period in additional_limits
+        ]
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -73,11 +76,11 @@ def create_rate_limited_send(
                 wait_times = [primary_limit.wait_time()]
                 if extra_limits:
                     wait_times.extend(limit.wait_time() for limit in extra_limits)
-                
+
                 max_wait = max(wait_times)
                 if max_wait <= 0:
                     break
-                
+
                 time.sleep(max_wait)
 
             # Record the call in all rate limit trackers
@@ -129,8 +132,14 @@ class RateLimitedSession(requests.Session):
             backoff_factor=backoff_factor,
             status_forcelist=[429, 500, 502, 503, 504],
             allowed_methods=[
-                "GET", "POST", "PUT", "DELETE",
-                "HEAD", "OPTIONS", "TRACE", "PATCH"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "HEAD",
+                "OPTIONS",
+                "TRACE",
+                "PATCH",
             ],
             raise_on_status=False,
         )
@@ -141,8 +150,7 @@ class RateLimitedSession(requests.Session):
 
         # Create and set the rate-limited send method
         self.send = create_rate_limited_send(
-            self.frequency,
-            additional_limits=additional_limits
+            self.frequency, additional_limits=additional_limits
         )(self.send)
 
 

@@ -21,8 +21,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 dependencies = [
-    "requests>=2.25.0",
-    "ratelimit>=2.2.1"
+    "requests>=2.25.0"
 ]
 
 [project.optional-dependencies]
@@ -35,7 +34,8 @@ dev = [
     "pylint>=2.17.0",
     "pyupgrade>=3.3.0",
     "build>=0.10.0",
-    "twine>=4.0.0"
+    "twine>=4.0.0",
+    "git-changelog>=2.5.3"
 ]
 
 [project.urls]
