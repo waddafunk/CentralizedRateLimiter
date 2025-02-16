@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/waddafunk/CentralizedRateLimiter)
 [![PyPI version](https://img.shields.io/pypi/v/centralized-rate-limiter.svg)](https://pypi.org/project/centralized-rate-limiter/)
 
-A robust, centralized rate limiting utility for Python applications that need precise control over API request rates with built-in retry mechanisms and a single rate limit for all request methods.
+A robust, centralized rate limiting utility for Python applications that need precise control over API request rates with built-in retry mechanisms and support for multiple rate limits.
 
 ## 🔧 Installation
 
@@ -16,6 +16,7 @@ pip install centralized-rate-limiter
 
 ## 🌟 Features
 
+- **Multiple Rate Limits**: Support for multiple concurrent rate limits (e.g., per-second, per-minute, per-hour)
 - **Centralized Configuration**: Set rate limiting parameters once and reuse across your application for all request methods
 - **Comprehensive Retry Logic**: Built-in exponential backoff and configurable retry attempts
 - **Thread-Safe**: Reliable rate limiting in multi-threaded environments
@@ -23,15 +24,25 @@ pip install centralized-rate-limiter
 - **Session Management**: Extends `requests.Session` for seamless integration
 - **Type Hints**: Full type annotation support for better IDE integration
 
-
 ## 🎯 Quick Start
 
 ```python
 from centralized_rate_limiter import get_rate_limiter
 
-# Create a rate limiter with custom parameters
+# Create a rate limiter with single rate limit (backward compatible)
 rate_limiter = get_rate_limiter(
     requests_per_second=10,
+    total_retries=5,
+    backoff_factor=0.25
+)
+
+# Create a rate limiter with multiple rate limits
+rate_limiter = get_rate_limiter(
+    requests_per_second=10,  # Base rate: 10 requests per second
+    additional_limits=[
+        (60, 60),     # 60 requests per minute
+        (2000, 3600)  # 2000 requests per hour
+    ],
     total_retries=5,
     backoff_factor=0.25
 )
@@ -53,9 +64,13 @@ post_response = rate_limiter.post(
 ```python
 from centralized_rate_limiter import RateLimitedSession
 
-# Create a session with specific parameters
+# Create a session with multiple rate limits
 session = RateLimitedSession(
     requests_per_second=5,
+    additional_limits=[
+        (100, 60),    # 100 requests per minute
+        (2000, 3600)  # 2000 requests per hour
+    ],
     total_retries=3,
     backoff_factor=0.5
 )
@@ -86,29 +101,44 @@ except Exception as e:
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `requests_per_second` | int | 10 | Maximum number of requests allowed per second |
+| `additional_limits` | List[Tuple[int, float]] | None | Additional rate limits as (max_calls, period) tuples |
 | `total_retries` | int | 5 | Maximum number of retry attempts for failed requests |
 | `backoff_factor` | float | 0.25 | Multiplier for exponential backoff between retries |
+
+### Additional Limits Format
+The `additional_limits` parameter accepts a list of tuples, where each tuple contains:
+- First element: Maximum number of calls allowed in the period
+- Second element: Period in seconds
+
+Example:
+```python
+additional_limits=[
+    (60, 60),     # 60 calls per 60 seconds (per minute)
+    (2000, 3600)  # 2000 calls per 3600 seconds (per hour)
+]
+```
 
 ## 🤔 When to Use This vs. Other Solutions
 
 ### Use CentralizedRateLimiter When You Need:
 
-1. **Centralized Rate Limiting and Retry Logic**
+1. **Multiple Rate Limits**
+   - You need to handle multiple concurrent rate limits (e.g., per-second, per-minute, per-hour)
+   - You want to enforce different rate limits for different time windows
+   - You need to comply with complex API rate limit requirements
+
+2. **Centralized Rate Limiting and Retry Logic**
    - You want a single solution that handles both rate limiting and retries
    - You want a single rate limit for all your requests methods 
    - You need fine-grained control over retry behavior
 
-2. **Thread-Safe Operation**
+3. **Thread-Safe Operation**
    - Your application makes API calls from multiple threads
    - You need reliable rate limiting in concurrent scenarios
 
-3. **Session Management**
+4. **Session Management**
    - You want to maintain session state across requests
    - You need to reuse connections for better performance
-
-4. **Custom Configuration**
-   - You require specific combinations of rate limiting and retry parameters
-   - You need to adjust settings per-instance
 
 ### Consider Alternatives When:
 
@@ -124,13 +154,11 @@ except Exception as e:
    - Consider `aiohttp` with `aiohttp-client-manager`
    - Use `asyncio` based solutions for async workflows
 
-4. **Minimal Dependencies**
-   - Use built-in `time.sleep()` for simple delays
-   - Implement basic rate limiting without external packages
 
 ## 🔍 How It Works
 
 The library uses a combination of:
+- Thread-safe rate limiting for multiple concurrent limits
 - Decorator-based rate limiting using the `ratelimit` package
 - `urllib3.util.Retry` for configurable retry behavior
 - Custom session management extending `requests.Session`
@@ -138,6 +166,19 @@ The library uses a combination of:
 Example retry sequence:
 ```
 Request 1 (fails) → Wait 0.25s → Retry 1 (fails) → Wait 0.5s → Retry 2 (succeeds)
+```
+
+Example with multiple rate limits:
+```python
+# Configuration
+limits = [
+    (60, 60),     # 60 requests per minute
+    (2000, 3600)  # 2000 requests per hour
+]
+
+# The rate limiter will ensure all limits are respected:
+# - No more than 60 requests in any 60-second window
+# - No more than 2000 requests in any 3600-second (1 hour) window
 ```
 
 ## 🛠️ Development
@@ -324,7 +365,8 @@ class RateLimitedSession(requests.Session):
         self,
         requests_per_second: int = 10,
         total_retries: int = 5,
-        backoff_factor: float = 0.25
+        backoff_factor: float = 0.25,
+        additional_limits: Optional[List[Tuple[int, float]]] = None
     ) -> None:
         """Initialize a new rate-limited session."""
 ```
@@ -336,6 +378,7 @@ def get_rate_limiter(
     requests_per_second: int = 10,
     total_retries: int = 5,
     backoff_factor: float = 0.25,
+    additional_limits: Optional[List[Tuple[int, float]]] = None
 ) -> RateLimitedSession:
     """Create a new rate-limited session with specified parameters."""
 ```
